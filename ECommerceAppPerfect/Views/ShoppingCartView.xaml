@@ -1,0 +1,429 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.ShoppingCartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU COȘUL DE CUMPĂRĂTURI ==================== -->
+    <!-- Stiluri pentru cardurile de produse din coș, butoane și controale de cantitate -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardul fiecărui produs din coș -->
+        <Style x:Key="CartItemCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="10" Opacity="0.08" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele de ajustare cantitate (+/-) -->
+        <Style x:Key="QuantityButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="Foreground" Value="#616161"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Efect hover pentru butoanele de cantitate -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E0E0E0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul de eliminare produs din coș -->
+        <Style x:Key="RemoveButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#F44336"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="4">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#FFEBEE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul principal de finalizare comandă -->
+        <Style x:Key="CheckoutButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FF5722"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="30,15"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <!-- Umbră pentru elevație buton -->
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="10" Opacity="0.3" Color="#FF5722"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E64A19"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+    <Grid Margin="30">
+        <Grid.ColumnDefinitions>
+            <!-- Coloană pentru lista de produse din coș -->
+            <ColumnDefinition Width="*"/>
+            <!-- Coloană pentru sumarul comenzii -->
+            <ColumnDefinition Width="350"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== PANOUL STÂNG - LISTA PRODUSELOR ==================== -->
+        <Grid Grid.Column="0" Margin="0,0,30,0">
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Lista produselor -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== HEADER COȘ ===== -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,25">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🛒" FontSize="32" VerticalAlignment="Center"/>
+                    <TextBlock Text=" Coșul Meu"
+                               FontSize="28"
+                               FontWeight="Bold"
+                               Foreground="#212121"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+                <!-- Numărul de produse din coș -->
+                <TextBlock FontSize="14"
+                           Foreground="#757575"
+                           Margin="0,8,0,0">
+                    <Run Text="{Binding CartItemsCount}"/>
+                    <Run Text=" produse în coș"/>
+                </TextBlock>
+            </StackPanel>
+
+            <!-- ===== LISTA PRODUSELOR DIN COȘ ===== -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <!-- ItemsControl pentru afișarea produselor fără selecție -->
+                <ItemsControl ItemsSource="{Binding CartItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Card pentru fiecare produs din coș -->
+                            <Border Style="{StaticResource CartItemCardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <!-- Imagine produs -->
+                                        <ColumnDefinition Width="100"/>
+                                        <!-- Detalii produs -->
+                                        <ColumnDefinition Width="*"/>
+                                        <!-- Controale cantitate -->
+                                        <ColumnDefinition Width="Auto"/>
+                                        <!-- Preț și eliminare -->
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- ===== IMAGINE PRODUS ===== -->
+                                    <Border Grid.Column="0"
+                                            CornerRadius="8"
+                                            Width="80" Height="80"
+                                            ClipToBounds="True">
+                                        <Image Source="{Binding Product.ImageUrl}"
+                                               Stretch="UniformToFill"/>
+                                    </Border>
+
+                                    <!-- ===== DETALII PRODUS ===== -->
+                                    <StackPanel Grid.Column="1"
+                                                Margin="20,0"
+                                                VerticalAlignment="Center">
+                                        <!-- Numele produsului -->
+                                        <TextBlock Text="{Binding Product.Name}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="#212121"/>
+                                        <!-- Categoria -->
+                                        <TextBlock Text="{Binding Product.CategoryName}"
+                                                   FontSize="13"
+                                                   Foreground="#9E9E9E"
+                                                   Margin="0,4,0,0"/>
+                                        <!-- Preț unitar -->
+                                        <TextBlock FontSize="14"
+                                                   Foreground="#757575"
+                                                   Margin="0,8,0,0">
+                                            <Run Text="Preț unitar: "/>
+                                            <Run Text="{Binding Product.Price, StringFormat='{}{0:N2} RON'}"
+                                                 FontWeight="SemiBold"
+                                                 Foreground="#2196F3"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- ===== CONTROALE CANTITATE ===== -->
+                                    <!-- Butoane pentru ajustarea cantității produsului -->
+                                    <StackPanel Grid.Column="2"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <!-- Buton scădere cantitate -->
+                                        <Button Content="−"
+                                                Style="{StaticResource QuantityButtonStyle}"
+                                                Command="{Binding DataContext.DecreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+
+                                        <!-- Afișare cantitate curentă -->
+                                        <TextBlock Text="{Binding Quantity}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"
+                                                   Width="50"
+                                                   TextAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Margin="5,0"/>
+
+                                        <!-- Buton creștere cantitate -->
+                                        <Button Content="+"
+                                                Style="{StaticResource QuantityButtonStyle}"
+                                                Command="{Binding DataContext.IncreaseQuantityCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+
+                                    <!-- ===== PREȚ TOTAL ȘI ELIMINARE ===== -->
+                                    <StackPanel Grid.Column="3"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Right">
+                                        <!-- Subtotal pentru acest produs (preț × cantitate) -->
+                                        <TextBlock Text="{Binding Subtotal, StringFormat='{}{0:N2} RON'}"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#212121"
+                                                   HorizontalAlignment="Right"/>
+
+                                        <!-- Buton pentru eliminarea produsului din coș -->
+                                        <Button Content="🗑️ Elimină"
+                                                Style="{StaticResource RemoveButtonStyle}"
+                                                Command="{Binding DataContext.RemoveItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"
+                                                HorizontalAlignment="Right"
+                                                Margin="0,10,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- ===== MESAJ COȘ GOL ===== -->
+            <!-- Afișat când coșul nu conține produse -->
+            <StackPanel Grid.Row="1"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Visibility="{Binding IsCartEmpty, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="🛒" FontSize="64" HorizontalAlignment="Center" Opacity="0.5"/>
+                <TextBlock Text="Coșul este gol"
+                           FontSize="20"
+                           Foreground="#757575"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+                <TextBlock Text="Adăugați produse pentru a continua"
+                           FontSize="14"
+                           Foreground="#9E9E9E"
+                           HorizontalAlignment="Center"
+                           Margin="0,5,0,20"/>
+                <!-- Buton pentru a naviga înapoi la magazin -->
+                <Button Content="🛍️ Continuă cumpărăturile"
+                        Background="#2196F3"
+                        Foreground="White"
+                        Padding="25,12"
+                        FontSize="14"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Command="{Binding ContinueShoppingCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ==================== PANOUL DREPT - SUMARUL COMENZII ==================== -->
+        <!-- Card cu totalul și butonul de finalizare -->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="12"
+                Padding="25"
+                VerticalAlignment="Top"
+                Visibility="{Binding HasItems, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- ===== TITLU SUMAR ===== -->
+                <TextBlock Text="📋 Sumar Comandă"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Foreground="#212121"
+                           Margin="0,0,0,25"/>
+
+                <!-- ===== SUBTOTAL PRODUSE ===== -->
+                <Grid Margin="0,0,0,12">
+                    <TextBlock Text="Subtotal produse:"
+                               FontSize="14"
+                               Foreground="#757575"/>
+                    <TextBlock Text="{Binding Subtotal, StringFormat='{}{0:N2} RON'}"
+                               FontSize="14"
+                               HorizontalAlignment="Right"/>
+                </Grid>
+
+                <!-- ===== COST LIVRARE ===== -->
+                <Grid Margin="0,0,0,12">
+                    <TextBlock Text="Cost livrare:"
+                               FontSize="14"
+                               Foreground="#757575"/>
+                    <TextBlock Text="{Binding ShippingCost, StringFormat='{}{0:N2} RON'}"
+                               FontSize="14"
+                               HorizontalAlignment="Right"/>
+                </Grid>
+
+                <!-- ===== DISCOUNT (DACĂ EXISTĂ) ===== -->
+                <Grid Margin="0,0,0,12"
+                      Visibility="{Binding HasDiscount, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="Discount:"
+                               FontSize="14"
+                               Foreground="#4CAF50"/>
+                    <TextBlock Text="{Binding Discount, StringFormat='-{0:N2} RON'}"
+                               FontSize="14"
+                               Foreground="#4CAF50"
+                               HorizontalAlignment="Right"/>
+                </Grid>
+
+                <!-- ===== CÂMP COD PROMOȚIONAL ===== -->
+                <Border Background="#F5F5F5"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,10,0,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Câmp pentru introducerea codului promoțional -->
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding PromoCode, Mode=TwoWay}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 FontSize="14"
+                                 VerticalAlignment="Center"/>
+                        <!-- Buton aplicare cod -->
+                        <Button Grid.Column="1"
+                                Content="Aplică"
+                                Background="#2196F3"
+                                Foreground="White"
+                                Padding="15,8"
+                                FontSize="12"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Command="{Binding ApplyPromoCodeCommand}"/>
+                    </Grid>
+                </Border>
+
+                <!-- ===== TOTAL FINAL ===== -->
+                <Border Background="#E3F2FD"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,25">
+                    <Grid>
+                        <TextBlock Text="Total:"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Total, StringFormat='{}{0:N2} RON'}"
+                                   FontSize="24"
+                                   FontWeight="Bold"
+                                   Foreground="#2196F3"
+                                   HorizontalAlignment="Right"/>
+                    </Grid>
+                </Border>
+
+                <!-- ===== BUTON FINALIZARE COMANDĂ ===== -->
+                <Button Content="💳 Finalizează Comanda"
+                        Style="{StaticResource CheckoutButtonStyle}"
+                        Command="{Binding CheckoutCommand}"
+                        HorizontalAlignment="Stretch"/>
+
+                <!-- ===== LINK CONTINUĂ CUMPĂRĂTURILE ===== -->
+                <Button Content="🛍️ Continuă cumpărăturile"
+                        Background="Transparent"
+                        Foreground="#2196F3"
+                        FontSize="14"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,15,0,0"
+                        Command="{Binding ContinueShoppingCommand}"/>
+
+                <!-- ===== INFORMAȚII SECURITATE ===== -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,25,0,0">
+                    <TextBlock Text="🔒" FontSize="14"/>
+                    <TextBlock Text=" Plată securizată"
+                               FontSize="12"
+                               Foreground="#757575"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

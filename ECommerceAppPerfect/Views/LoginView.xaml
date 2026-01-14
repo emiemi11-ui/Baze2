@@ -1,0 +1,231 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:helpers="clr-namespace:ECommerceAppPerfect.Helpers"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800">
+
+    <!-- USERCONTROL LOGINVIEW - Pagina de autentificare
+
+    CE ESTE UN USERCONTROL?
+    UserControl este o componenta reutilizabila in WPF
+    Poate contine mai multe controale grupate impreuna
+    Se foloseste pentru a crea componente custom sau pagini
+
+    NAMESPACE-URI DECLARATE:
+    - xmlns (default): Controale WPF standard (Grid, Button, TextBox)
+    - xmlns:x: Extensii XAML (x:Class, x:Name, x:Key)
+    - xmlns:local: Namespace-ul proiectului pentru Views
+    - xmlns:helpers: Pentru PasswordHelper (attached property)
+
+    DESIGN:
+    - Centrat pe ecran cu fundal gradient
+    - Card alb cu umbra pentru formularul de login
+    - Emoji-uri Unicode pentru iconite (nu avem FontAwesome)
+    -->
+
+    <!-- RESURSE LOCALE - Stiluri specifice acestui View -->
+    <UserControl.Resources>
+        <!-- Stil pentru TextBox-uri cu colturi rotunjite -->
+        <Style x:Key="LoginTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <!-- Border cu CornerRadius pentru colturi rotunjite -->
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <!-- PART_ContentHost e necesar pentru TextBox -->
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru PasswordBox -->
+        <Style x:Key="LoginPasswordStyle" TargetType="PasswordBox">
+            <Setter Property="Padding" Value="15,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul de Login -->
+        <Style x:Key="LoginButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="30,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <!-- DropShadowEffect pentru umbra butonului -->
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2"
+                                                  BlurRadius="8"
+                                                  Opacity="0.3"
+                                                  Color="#2196F3"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <!-- TRIGGERS - Schimba aspectul la interactiune -->
+                        <ControlTemplate.Triggers>
+                            <!-- Hover: culoare mai inchisa -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                            <!-- Pressed: si mai inchisa -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1565C0"/>
+                            </Trigger>
+                            <!-- Disabled: gri -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- GRID PRINCIPAL - Container pentru tot continutul -->
+    <Grid>
+        <!-- Fundal gradient -->
+        <Grid.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="#E3F2FD" Offset="0"/>
+                <GradientStop Color="#FFFFFF" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <!-- CARD DE LOGIN - Border cu umbra, centrat -->
+        <Border Background="White"
+                CornerRadius="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                MinWidth="400"
+                Padding="40">
+            <!-- Umbra pentru efect de elevatie Material Design -->
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0"
+                                  BlurRadius="30"
+                                  Opacity="0.15"
+                                  Color="Black"/>
+            </Border.Effect>
+
+            <!-- CONTINUTUL CARDULUI - StackPanel vertical -->
+            <StackPanel>
+                <!-- LOGO - Emoji de magazin -->
+                <TextBlock Text="🛍️"
+                           FontSize="48"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,10"/>
+
+                <!-- TITLU - Numele aplicatiei -->
+                <TextBlock Text="E-Commerce App"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#2196F3"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,5"/>
+
+                <!-- SUBTITLU -->
+                <TextBlock Text="Conectați-vă la contul dumneavoastră"
+                           FontSize="14"
+                           Foreground="#757575"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,30"/>
+
+                <!-- LABEL USERNAME -->
+                <TextBlock Text="👤 Nume utilizator"
+                           FontSize="13"
+                           Foreground="#616161"
+                           Margin="0,0,0,8"/>
+
+                <!-- TEXTBOX USERNAME
+                Binding TwoWay: Sincronizeaza in ambele directii
+                UpdateSourceTrigger=PropertyChanged: Actualizeaza la fiecare tasta -->
+                <TextBox Style="{StaticResource LoginTextBoxStyle}"
+                         Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,20"/>
+
+                <!-- LABEL PAROLA -->
+                <TextBlock Text="🔒 Parolă"
+                           FontSize="13"
+                           Foreground="#616161"
+                           Margin="0,0,0,8"/>
+
+                <!-- PASSWORDBOX
+                PasswordBox nu suporta binding direct (securitate)
+                Folosim PasswordHelper attached property pentru binding -->
+                <PasswordBox Style="{StaticResource LoginPasswordStyle}"
+                             helpers:PasswordHelper.Attach="True"
+                             helpers:PasswordHelper.Password="{Binding Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,15"/>
+
+                <!-- MESAJ EROARE
+                Vizibil doar cand exista eroare (HasError = true) -->
+                <TextBlock Text="{Binding ErrorMessage}"
+                           Foreground="#F44336"
+                           FontSize="13"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,20"
+                           Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- BUTON LOGIN
+                Command binding la LoginCommand din ViewModel -->
+                <Button Content="🔑 Autentificare"
+                        Style="{StaticResource LoginButtonStyle}"
+                        Command="{Binding LoginCommand}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,10,0,0"/>
+
+                <!-- INDICATOR INCARCARE
+                Vizibil cand IsLoading = true -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            Margin="0,15,0,0"
+                            Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="⏳ Se încarcă..."
+                               Foreground="#757575"
+                               FontSize="13"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

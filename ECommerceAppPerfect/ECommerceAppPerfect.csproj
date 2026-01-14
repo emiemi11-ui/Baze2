@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    FISIERUL CSPROJ - Project Configuration File
+
+    CE ESTE ACEST FISIER?
+    Este fisierul principal de configurare al proiectului .NET Framework
+    MSBuild (compilatorul Microsoft) citeste acest fisier pentru a stii:
+    - Ce versiune de .NET sa foloseasca
+    - Ce fisiere sa includa in compilare
+    - Ce referinte (biblioteci) sa adauge
+    - Ce pachet NuGet sa instaleze
+    - Cum sa construiasca aplicatia
+
+    STRUCTURA FISIERULUI:
+    1. PropertyGroup - setari generale ale proiectului
+    2. ItemGroup cu Reference - bibliotecile .NET folosite
+    3. ItemGroup cu Compile - fisierele .cs de compilat
+    4. ItemGroup cu Page/ApplicationDefinition - fisierele XAML
+    5. ItemGroup cu Content/None - fisierele non-compilabile
+    6. Import - importa target-uri MSBuild pentru WPF si EF
+
+    CUM SE FOLOSESTE?
+    Visual Studio il citeste automat cand deschizi proiectul
+    Sau poti rula manual: msbuild ECommerceAppPerfect.csproj
+-->
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- IMPORT: Target-uri MSBuild pentru proiecte C# -->
+  <!-- Asta adauga reguli de compilare standard pentru C# -->
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
+  <!-- PROPERTY GROUP: Setari generale ale proiectului -->
+  <PropertyGroup>
+    <!-- Configuration: Debug sau Release -->
+    <!-- Debug = cu simboluri de debugging, fara optimizari -->
+    <!-- Release = optimizat pentru productie -->
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+
+    <!-- Platform: x86, x64, sau AnyCPU -->
+    <!-- AnyCPU = ruleaza pe orice arhitectura -->
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+
+    <!-- ProjectGuid: Identificator unic al proiectului -->
+    <!-- Folosit de Visual Studio pentru a identifica proiectul in solution -->
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+
+    <!-- OutputType: WinExe pentru aplicatii Windows (fara consola) -->
+    <!-- Alternativa: Exe (cu consola), Library (DLL) -->
+    <OutputType>WinExe</OutputType>
+
+    <!-- RootNamespace: Namespace-ul default pentru fisierele noi -->
+    <RootNamespace>ECommerceAppPerfect</RootNamespace>
+
+    <!-- AssemblyName: Numele fisierului executabil generat -->
+    <AssemblyName>ECommerceAppPerfect</AssemblyName>
+
+    <!-- TargetFrameworkVersion: Versiunea .NET Framework -->
+    <!-- v4.7.2 este stabila si larg suportata -->
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+
+    <!-- FileAlignment: Alinierea sectiunilor in fisierul executabil -->
+    <FileAlignment>512</FileAlignment>
+
+    <!-- ProjectTypeGuids: Identifica tipul proiectului -->
+    <!-- Primul GUID = WPF, al doilea = C# -->
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+
+    <!-- WarningLevel: Nivelul de avertismente al compilatorului -->
+    <!-- 4 = toate avertismentele (cel mai strict) -->
+    <WarningLevel>4</WarningLevel>
+
+    <!-- AutoGenerateBindingRedirects: Genereaza redirectari automate pentru assembly-uri -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+
+    <!-- Deterministic: Build-uri identice pentru acelasi cod -->
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <!-- PROPERTY GROUP pentru configuratia DEBUG -->
+  <!-- Setari specifice pentru compilare in mod Debug -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <!-- PlatformTarget: AnyCPU poate rula pe x86 sau x64 -->
+    <PlatformTarget>AnyCPU</PlatformTarget>
+
+    <!-- DebugSymbols: Genereaza simboluri pentru debugging -->
+    <DebugSymbols>true</DebugSymbols>
+
+    <!-- DebugType: Tipul informatiilor de debug -->
+    <!-- full = toate informatiile de debug -->
+    <DebugType>full</DebugType>
+
+    <!-- Optimize: Dezactiveaza optimizarile pentru debugging mai usor -->
+    <Optimize>false</Optimize>
+
+    <!-- OutputPath: Unde se pune executabilul compilat -->
+    <OutputPath>bin\Debug\</OutputPath>
+
+    <!-- DefineConstants: Constante definite pentru preprocessor -->
+    <!-- DEBUG si TRACE permit #if DEBUG in cod -->
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+
+    <!-- ErrorReport: Ce sa faca la erori de compilare -->
+    <ErrorReport>prompt</ErrorReport>
+
+    <!-- WarningLevel: Nivelul de avertismente -->
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <!-- PROPERTY GROUP pentru configuratia RELEASE -->
+  <!-- Setari specifice pentru compilare in mod Release (productie) -->
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+
+    <!-- DebugType: pdbonly = doar PDB minimal pentru stack traces -->
+    <DebugType>pdbonly</DebugType>
+
+    <!-- Optimize: Activeaza optimizarile pentru performanta -->
+    <Optimize>true</Optimize>
+
+    <OutputPath>bin\Release\</OutputPath>
+
+    <!-- In Release nu avem DEBUG definit -->
+    <DefineConstants>TRACE</DefineConstants>
+
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <!-- ITEM GROUP: Referinte la assembly-uri .NET Framework -->
+  <!-- Acestea sunt bibliotecile standard de care depinde proiectul -->
+  <ItemGroup>
+    <!-- EntityFramework: Biblioteca ORM pentru acces la baza de date -->
+    <!-- NOTA: Aceasta e adaugata automat de NuGet, dar o includem explicit -->
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+
+    <!-- PresentationCore, PresentationFramework, WindowsBase: WPF -->
+    <!-- Acestea formeaza fundatia pentru aplicatii WPF -->
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+
+    <!-- System: Biblioteca de baza .NET -->
+    <Reference Include="System" />
+
+    <!-- System.ComponentModel.DataAnnotations: Pentru validari si atribute -->
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+
+    <!-- System.Configuration: Pentru citirea App.config -->
+    <Reference Include="System.Configuration" />
+
+    <!-- System.Core: LINQ si alte extensii .NET 3.5+ -->
+    <Reference Include="System.Core" />
+
+    <!-- System.Data: ADO.NET pentru acces la date -->
+    <Reference Include="System.Data" />
+
+    <!-- System.Data.DataSetExtensions: Extensii pentru DataSet cu LINQ -->
+    <Reference Include="System.Data.DataSetExtensions" />
+
+    <!-- System.Net.Http: Pentru cereri HTTP (daca e nevoie) -->
+    <Reference Include="System.Net.Http" />
+
+    <!-- System.Security: Pentru criptare (SHA-256 pentru parole) -->
+    <Reference Include="System.Security" />
+
+    <!-- System.Xaml: Pentru procesarea XAML -->
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+
+    <!-- System.Xml: Pentru procesarea XML -->
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+
+  <!-- ITEM GROUP: Fisierele de cod C# de compilat -->
+  <!-- Fiecare <Compile Include="..."/> adauga un fisier .cs la compilare -->
+  <ItemGroup>
+    <!-- Properties/AssemblyInfo.cs: Metadata despre assembly -->
+    <Compile Include="Properties\AssemblyInfo.cs" />
+
+    <!-- App.xaml.cs: Code-behind pentru aplicatie -->
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+    </Compile>
+
+    <!-- MainWindow.xaml.cs: Code-behind pentru fereastra principala -->
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+
+    <!-- MODELS: Clasele pentru entitati -->
+    <Compile Include="Models\ECommerceModel.Context.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\Product.cs" />
+    <Compile Include="Models\Category.cs" />
+    <Compile Include="Models\Order.cs" />
+    <Compile Include="Models\OrderDetail.cs" />
+    <Compile Include="Models\Inventory.cs" />
+    <Compile Include="Models\Review.cs" />
+    <Compile Include="Models\Tag.cs" />
+    <Compile Include="Models\SupportTicket.cs" />
+    <Compile Include="Models\TicketMessage.cs" />
+    <Compile Include="Models\StoreSetting.cs" />
+
+    <!-- COMMANDS: Implementari ICommand pentru MVVM -->
+    <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="Commands\AsyncRelayCommand.cs" />
+
+    <!-- STORES: State management -->
+    <Compile Include="Stores\CurrentUserStore.cs" />
+    <Compile Include="Stores\NavigationStore.cs" />
+
+    <!-- CONVERTERS: Value converters pentru XAML bindings -->
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\StatusToColorConverter.cs" />
+    <Compile Include="Converters\PriceFormatConverter.cs" />
+    <Compile Include="Converters\InverseBooleanConverter.cs" />
+    <Compile Include="Converters\NullToVisibilityConverter.cs" />
+
+    <!-- HELPERS: Clase utilitare -->
+    <Compile Include="Helpers\PasswordHelper.cs" />
+    <Compile Include="Helpers\ValidationHelper.cs" />
+    <Compile Include="Helpers\NavigationHelper.cs" />
+
+    <!-- SERVICES: Business logic layer -->
+    <Compile Include="Services\IUserService.cs" />
+    <Compile Include="Services\UserService.cs" />
+    <Compile Include="Services\IProductService.cs" />
+    <Compile Include="Services\ProductService.cs" />
+    <Compile Include="Services\IOrderService.cs" />
+    <Compile Include="Services\OrderService.cs" />
+    <Compile Include="Services\IInventoryService.cs" />
+    <Compile Include="Services\InventoryService.cs" />
+    <Compile Include="Services\ISupportService.cs" />
+    <Compile Include="Services\SupportService.cs" />
+    <Compile Include="Services\IStoreSettingsService.cs" />
+    <Compile Include="Services\StoreSettingsService.cs" />
+    <Compile Include="Services\IReportService.cs" />
+    <Compile Include="Services\ReportService.cs" />
+
+    <!-- VIEWMODELS: MVVM ViewModels -->
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\LoginViewModel.cs" />
+    <Compile Include="ViewModels\StoreOwnerDashboardViewModel.cs" />
+    <Compile Include="ViewModels\ProductManagementViewModel.cs" />
+    <Compile Include="ViewModels\InventoryManagementViewModel.cs" />
+    <Compile Include="ViewModels\OrderManagementViewModel.cs" />
+    <Compile Include="ViewModels\CustomerShopViewModel.cs" />
+    <Compile Include="ViewModels\ShoppingCartViewModel.cs" />
+    <Compile Include="ViewModels\OrderHistoryViewModel.cs" />
+    <Compile Include="ViewModels\CustomerServiceViewModel.cs" />
+    <Compile Include="ViewModels\StoreSettingsViewModel.cs" />
+
+    <!-- Views code-behind -->
+    <Compile Include="Views\LoginView.xaml.cs">
+      <DependentUpon>LoginView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StoreOwnerDashboardView.xaml.cs">
+      <DependentUpon>StoreOwnerDashboardView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ProductManagementView.xaml.cs">
+      <DependentUpon>ProductManagementView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InventoryManagementView.xaml.cs">
+      <DependentUpon>InventoryManagementView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OrderManagementView.xaml.cs">
+      <DependentUpon>OrderManagementView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CustomerShopView.xaml.cs">
+      <DependentUpon>CustomerShopView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ShoppingCartView.xaml.cs">
+      <DependentUpon>ShoppingCartView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OrderHistoryView.xaml.cs">
+      <DependentUpon>OrderHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CustomerServiceView.xaml.cs">
+      <DependentUpon>CustomerServiceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\StoreSettingsView.xaml.cs">
+      <DependentUpon>StoreSettingsView.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!-- ITEM GROUP: Fisierele XAML -->
+  <ItemGroup>
+    <!-- ApplicationDefinition: Punctul de intrare al aplicatiei WPF -->
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+
+    <!-- Page: Ferestre si controale XAML -->
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\LoginView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\StoreOwnerDashboardView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ProductManagementView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InventoryManagementView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OrderManagementView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CustomerShopView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ShoppingCartView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OrderHistoryView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CustomerServiceView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\StoreSettingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
+  <!-- ITEM GROUP: Fisiere de continut (copiate la output) -->
+  <ItemGroup>
+    <!-- App.config: Configuratia aplicatiei (connection strings, etc.) -->
+    <None Include="App.config" />
+
+    <!-- packages.config: Lista pachetelor NuGet -->
+    <None Include="packages.config" />
+
+    <!-- SQL Script: Scriptul pentru baza de date -->
+    <Content Include="Database\ECommerceDB_Script.sql" />
+  </ItemGroup>
+
+  <!-- ITEM GROUP: Fisierul EDMX (Entity Data Model) -->
+  <!-- NOTA: In Visual Studio, acest fisier se genereaza automat cu wizard-ul -->
+  <!-- Aici il includem pentru referinta - va fi creat de wizard -->
+  <ItemGroup>
+    <EntityDeploy Include="Models\ECommerceModel.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>ECommerceModel.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+  </ItemGroup>
+
+  <!-- IMPORT: Target-uri MSBuild pentru C# -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <!-- IMPORT: Target-uri pentru Entity Framework -->
+  <!-- Acestea sunt necesare pentru procesarea fisierelor EDMX -->
+  <Import Project="packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+
+  <!-- TARGET: Verifica la build ca NuGet packages sunt restaurate -->
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$(ErrorText)" />
+  </Target>
+</Project>

@@ -1,0 +1,420 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.CustomerServiceView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU SERVICIUL CLIENȚI ==================== -->
+    <!-- Stiluri pentru cardurile de tichete, mesaje și controale de chat -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardul fiecărui tichet din listă -->
+        <Style x:Key="TicketCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Stil pentru tichetul selectat -->
+        <Style x:Key="SelectedTicketCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E3F2FD"/>
+            <Setter Property="BorderBrush" Value="#2196F3"/>
+            <Setter Property="BorderThickness" Value="0,0,3,0"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Stil pentru badge-ul de prioritate -->
+        <Style x:Key="PriorityBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <!-- Stil pentru mesajele trimise (de la utilizator) -->
+        <Style x:Key="SentMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="CornerRadius" Value="12,12,0,12"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="50,5,0,5"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="MaxWidth" Value="350"/>
+        </Style>
+
+        <!-- Stil pentru mesajele primite (de la suport) -->
+        <Style x:Key="ReceivedMessageStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12,12,12,0"/>
+            <Setter Property="Padding" Value="15,10"/>
+            <Setter Property="Margin" Value="0,5,50,5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="MaxWidth" Value="350"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="5" Opacity="0.1" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul de trimitere mesaj -->
+        <Style x:Key="SendButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL CU DOUĂ PANOURI ==================== -->
+    <Grid Margin="30">
+        <Grid.ColumnDefinitions>
+            <!-- Coloană pentru lista de tichete -->
+            <ColumnDefinition Width="350"/>
+            <!-- Coloană pentru zona de chat/mesaje -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== PANOUL STÂNG - LISTA TICHETELOR ==================== -->
+        <Grid Grid.Column="0" Margin="0,0,20,0">
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Buton tichet nou -->
+                <RowDefinition Height="Auto"/>
+                <!-- Lista tichete -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== HEADER ===== -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock Text="💬 Suport Clienți"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="#212121"/>
+                <TextBlock Text="Conversațiile dumneavoastră cu echipa de suport"
+                           FontSize="13"
+                           Foreground="#757575"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- ===== BUTON TICHET NOU ===== -->
+            <Button Grid.Row="1"
+                    Content="➕ Deschide Tichet Nou"
+                    Background="#FF5722"
+                    Foreground="White"
+                    FontSize="14"
+                    Padding="15,12"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Margin="0,0,0,20"
+                    Command="{Binding CreateNewTicketCommand}"
+                    HorizontalAlignment="Stretch"/>
+
+            <!-- ===== LISTA TICHETELOR ===== -->
+            <Border Grid.Row="2"
+                    Background="White"
+                    CornerRadius="12"
+                    Padding="15">
+                <Border.Effect>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="10" Opacity="0.08" Color="Black"/>
+                </Border.Effect>
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <!-- Titlu secțiune -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- ScrollViewer cu tichete -->
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="📋 Tichetele Mele"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="#616161"
+                               Margin="0,0,0,15"/>
+
+                    <!-- Lista de tichete cu scroll -->
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl ItemsSource="{Binding Tickets}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Card pentru fiecare tichet -->
+                                    <Border Style="{StaticResource TicketCardStyle}"
+                                            Background="{Binding IsSelected, Converter={StaticResource BoolToSelectedBackgroundConverter}}">
+                                        <Border.InputBindings>
+                                            <MouseBinding MouseAction="LeftClick"
+                                                          Command="{Binding DataContext.SelectTicketCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                          CommandParameter="{Binding}"/>
+                                        </Border.InputBindings>
+
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <!-- Header cu subiect și status -->
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- Ultima actualizare -->
+                                                <RowDefinition Height="Auto"/>
+                                                <!-- Badge-uri prioritate și status -->
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <!-- Subiectul tichetului -->
+                                            <TextBlock Grid.Row="0"
+                                                       Text="{Binding Subject}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#212121"
+                                                       TextTrimming="CharacterEllipsis"/>
+
+                                            <!-- Ultima actualizare -->
+                                            <TextBlock Grid.Row="1"
+                                                       Text="{Binding LastUpdated, StringFormat='Actualizat: {0:dd.MM.yyyy HH:mm}'}"
+                                                       FontSize="11"
+                                                       Foreground="#9E9E9E"
+                                                       Margin="0,5,0,10"/>
+
+                                            <!-- Badge-uri pentru prioritate și status -->
+                                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                                <!-- Badge prioritate -->
+                                                <!-- Culoarea depinde de nivel: High=roșu, Medium=portocaliu, Low=verde -->
+                                                <Border Style="{StaticResource PriorityBadgeStyle}"
+                                                        Background="{Binding Priority, Converter={StaticResource PriorityToColorConverter}}"
+                                                        Margin="0,0,8,0">
+                                                    <TextBlock Text="{Binding Priority}"
+                                                               FontSize="10"
+                                                               Foreground="White"/>
+                                                </Border>
+
+                                                <!-- Badge status tichet -->
+                                                <Border Style="{StaticResource PriorityBadgeStyle}"
+                                                        Background="{Binding Status, Converter={StaticResource TicketStatusToColorConverter}}">
+                                                    <TextBlock Text="{Binding Status}"
+                                                               FontSize="10"
+                                                               Foreground="White"/>
+                                                </Border>
+
+                                                <!-- Indicator mesaje necitite -->
+                                                <Border Background="#F44336"
+                                                        CornerRadius="10"
+                                                        MinWidth="20" Height="20"
+                                                        Margin="10,0,0,0"
+                                                        Visibility="{Binding HasUnreadMessages, Converter={StaticResource BoolToVisibilityConverter}}">
+                                                    <TextBlock Text="{Binding UnreadCount}"
+                                                               Foreground="White"
+                                                               FontSize="10"
+                                                               FontWeight="Bold"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ==================== PANOUL DREPT - ZONA DE CHAT ==================== -->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="12"
+                Visibility="{Binding HasSelectedTicket, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Header conversație -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Zona mesaje -->
+                    <RowDefinition Height="*"/>
+                    <!-- Câmp introducere mesaj -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- ===== HEADER CONVERSAȚIE ===== -->
+                <Border Grid.Row="0"
+                        Background="#F5F5F5"
+                        Padding="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Informații tichet -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{Binding SelectedTicket.Subject}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="#212121"/>
+                            <TextBlock FontSize="12"
+                                       Foreground="#757575"
+                                       Margin="0,5,0,0">
+                                <Run Text="Tichet #"/>
+                                <Run Text="{Binding SelectedTicket.TicketId}"/>
+                                <Run Text=" • Creat: "/>
+                                <Run Text="{Binding SelectedTicket.CreatedAt, StringFormat='{}{0:dd.MM.yyyy}'}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Badge-uri status și prioritate -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Border Style="{StaticResource PriorityBadgeStyle}"
+                                    Background="{Binding SelectedTicket.Priority, Converter={StaticResource PriorityToColorConverter}}"
+                                    Margin="0,0,8,0">
+                                <TextBlock FontSize="11" Foreground="White">
+                                    <Run Text="⚡ "/>
+                                    <Run Text="{Binding SelectedTicket.Priority}"/>
+                                </TextBlock>
+                            </Border>
+                            <Border Style="{StaticResource PriorityBadgeStyle}"
+                                    Background="{Binding SelectedTicket.Status, Converter={StaticResource TicketStatusToColorConverter}}">
+                                <TextBlock Text="{Binding SelectedTicket.Status}"
+                                           FontSize="11"
+                                           Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- ===== ZONA MESAJELOR ===== -->
+                <!-- ScrollViewer cu lista de mesaje din conversație -->
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="20">
+                    <ItemsControl ItemsSource="{Binding SelectedTicket.Messages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <!-- Selectăm stilul bazat pe cine a trimis mesajul -->
+                                <Border Style="{Binding IsFromSupport, Converter={StaticResource BoolToMessageStyleConverter}}">
+                                    <StackPanel>
+                                        <!-- Informații expeditor -->
+                                        <TextBlock Text="{Binding SenderName}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding IsFromSupport, Converter={StaticResource BoolToMessageTextColorConverter}}"
+                                                   Opacity="0.8"/>
+
+                                        <!-- Conținutul mesajului -->
+                                        <TextBlock Text="{Binding Content}"
+                                                   FontSize="14"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{Binding IsFromSupport, Converter={StaticResource BoolToMessageTextColorConverter}}"
+                                                   Margin="0,5,0,5"/>
+
+                                        <!-- Timestamp mesaj -->
+                                        <TextBlock Text="{Binding SentAt, StringFormat='{}{0:HH:mm}'}"
+                                                   FontSize="10"
+                                                   Foreground="{Binding IsFromSupport, Converter={StaticResource BoolToMessageTextColorConverter}}"
+                                                   Opacity="0.6"
+                                                   HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+
+                <!-- ===== CÂMP INTRODUCERE MESAJ ===== -->
+                <Border Grid.Row="2"
+                        Background="#F5F5F5"
+                        Padding="20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <!-- Câmp text mesaj -->
+                            <ColumnDefinition Width="*"/>
+                            <!-- Buton trimitere -->
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- TextBox pentru mesaj nou -->
+                        <Border Grid.Column="0"
+                                Background="White"
+                                CornerRadius="8"
+                                Padding="5"
+                                Margin="0,0,15,0">
+                            <TextBox Text="{Binding NewMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     FontSize="14"
+                                     Padding="10"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="False"
+                                     MaxHeight="100"
+                                     VerticalScrollBarVisibility="Auto"/>
+                        </Border>
+
+                        <!-- Buton trimitere mesaj -->
+                        <Button Grid.Column="1"
+                                Content="📤 Trimite"
+                                Style="{StaticResource SendButtonStyle}"
+                                Command="{Binding SendMessageCommand}"
+                                IsEnabled="{Binding CanSendMessage}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ===== PLACEHOLDER CÂND NU E SELECTAT NICIUN TICHET ===== -->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="12"
+                Visibility="{Binding HasSelectedTicket, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="💬" FontSize="64" HorizontalAlignment="Center"/>
+                <TextBlock Text="Selectați o conversație"
+                           FontSize="18"
+                           Foreground="#757575"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+                <TextBlock Text="sau deschideți un tichet nou pentru a primi asistență"
+                           FontSize="14"
+                           Foreground="#9E9E9E"
+                           HorizontalAlignment="Center"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

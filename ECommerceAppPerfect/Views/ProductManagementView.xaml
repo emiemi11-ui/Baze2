@@ -1,0 +1,298 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.ProductManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU GESTIONAREA PRODUSELOR ==================== -->
+    <!-- Stiluri pentru butoane, câmpuri de căutare și controale specifice -->
+    <UserControl.Resources>
+        <!-- Stil pentru câmpul de căutare cu icon integrat -->
+        <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele de acțiune principale (Adaugă, Editează, Șterge) -->
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Efect hover - întunecăm culoarea -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                            <!-- Stare dezactivată - gri -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul de ștergere - culoare roșie de avertizare -->
+        <Style x:Key="DeleteButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButtonStyle}">
+            <Setter Property="Background" Value="#F44336"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#D32F2F"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Stil pentru ComboBox-ul de filtrare categorii -->
+        <Style x:Key="FilterComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinWidth" Value="150"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <!-- Rând pentru header cu titlu -->
+            <RowDefinition Height="Auto"/>
+            <!-- Rând pentru bara de instrumente (căutare, filtre, butoane) -->
+            <RowDefinition Height="Auto"/>
+            <!-- Rând pentru DataGrid cu produse - ocupă tot spațiul rămas -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ==================== HEADER PAGINĂ ==================== -->
+        <!-- Titlul și descrierea secțiunii -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,25">
+            <TextBlock Text="📦 Gestionare Produse"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#212121"/>
+            <TextBlock Text="Adăugați, editați sau ștergeți produsele din magazin"
+                       FontSize="14"
+                       Foreground="#757575"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- ==================== BARA DE INSTRUMENTE ==================== -->
+        <!-- Conține câmpul de căutare, filtrul de categorii și butoanele de acțiune -->
+        <Border Grid.Row="1"
+                Background="White"
+                CornerRadius="12"
+                Padding="20"
+                Margin="0,0,0,20">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <!-- Coloană pentru căutare și filtre -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Coloană pentru butoanele de acțiune -->
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ===== CĂUTARE ȘI FILTRE ===== -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <!-- Câmp de căutare produse -->
+                    <!-- UpdateSourceTrigger=PropertyChanged pentru căutare în timp real -->
+                    <TextBox Style="{StaticResource SearchBoxStyle}"
+                             Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Width="300"
+                             Margin="0,0,15,0">
+                        <!-- Placeholder text folosind adorner sau watermark -->
+                    </TextBox>
+
+                    <!-- Etichetă pentru filtrul de categorii -->
+                    <TextBlock Text="🏷️ Categorie:"
+                               VerticalAlignment="Center"
+                               FontSize="14"
+                               Foreground="#616161"
+                               Margin="0,0,10,0"/>
+
+                    <!-- ComboBox pentru filtrarea produselor după categorie -->
+                    <!-- ItemsSource conține lista de categorii din ViewModel -->
+                    <ComboBox Style="{StaticResource FilterComboBoxStyle}"
+                              ItemsSource="{Binding Categories}"
+                              SelectedItem="{Binding SelectedCategory, Mode=TwoWay}"
+                              DisplayMemberPath="Name"/>
+                </StackPanel>
+
+                <!-- ===== BUTOANE ACȚIUNE ===== -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- Buton pentru adăugarea unui produs nou -->
+                    <Button Content="➕ Adaugă Produs"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding AddProductCommand}"/>
+
+                    <!-- Buton pentru editarea produsului selectat -->
+                    <!-- IsEnabled controlat prin CanExecute pe command -->
+                    <Button Content="✏️ Editează"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding EditProductCommand}"/>
+
+                    <!-- Buton pentru ștergerea produsului selectat -->
+                    <Button Content="🗑️ Șterge"
+                            Style="{StaticResource ActionButtonStyle}"
+                            Background="#F44336"
+                            Command="{Binding DeleteProductCommand}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ==================== TABEL PRODUSE ==================== -->
+        <!-- DataGrid pentru afișarea și gestionarea produselor -->
+        <Border Grid.Row="2"
+                Background="White"
+                CornerRadius="12"
+                Padding="5">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <!-- DataGrid cu toate produsele din baza de date -->
+            <!-- SelectionMode=Single pentru a selecta câte un produs -->
+            <DataGrid ItemsSource="{Binding Products}"
+                      SelectedItem="{Binding SelectedProduct, Mode=TwoWay}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      BorderThickness="0"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      Background="Transparent"
+                      RowBackground="White"
+                      AlternatingRowBackground="#FAFAFA"
+                      RowHeight="50"
+                      ColumnHeaderHeight="45">
+
+                <!-- Stilizare header coloane -->
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#F5F5F5"/>
+                        <Setter Property="Foreground" Value="#616161"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="15,10"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <!-- Stilizare celule -->
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="15,10"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                        <Style.Triggers>
+                            <!-- Eliminăm culoarea de fundal la selectare pentru aspect mai curat -->
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#E3F2FD"/>
+                                <Setter Property="Foreground" Value="#212121"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+
+                <!-- Definirea coloanelor tabelului -->
+                <DataGrid.Columns>
+                    <!-- Coloană ID produs -->
+                    <DataGridTextColumn Header="ID"
+                                        Binding="{Binding ProductId}"
+                                        Width="70"/>
+
+                    <!-- Coloană imagine produs -->
+                    <DataGridTemplateColumn Header="Imagine" Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <!-- Imaginea produsului cu colțuri rotunjite -->
+                                <Border CornerRadius="4"
+                                        Width="40" Height="40"
+                                        ClipToBounds="True">
+                                    <Image Source="{Binding ImageUrl}"
+                                           Stretch="UniformToFill"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Coloană nume produs -->
+                    <DataGridTextColumn Header="Nume Produs"
+                                        Binding="{Binding Name}"
+                                        Width="*"/>
+
+                    <!-- Coloană categorie -->
+                    <DataGridTextColumn Header="Categorie"
+                                        Binding="{Binding CategoryName}"
+                                        Width="150"/>
+
+                    <!-- Coloană preț cu formatare monetară -->
+                    <DataGridTextColumn Header="Preț"
+                                        Binding="{Binding Price, StringFormat='{}{0:N2} RON'}"
+                                        Width="120"/>
+
+                    <!-- Coloană stoc disponibil -->
+                    <DataGridTextColumn Header="Stoc"
+                                        Binding="{Binding StockQuantity}"
+                                        Width="80"/>
+
+                    <!-- Coloană status produs (Activ/Inactiv) -->
+                    <DataGridTemplateColumn Header="Status" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <!-- Badge colorat pentru status -->
+                                <Border CornerRadius="10"
+                                        Padding="10,5"
+                                        HorizontalAlignment="Left"
+                                        Background="{Binding IsActive, Converter={StaticResource BoolToColorConverter}}">
+                                    <TextBlock Text="{Binding IsActive, Converter={StaticResource BoolToStatusConverter}}"
+                                               Foreground="White"
+                                               FontSize="11"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</UserControl>

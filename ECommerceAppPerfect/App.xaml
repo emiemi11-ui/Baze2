@@ -1,0 +1,311 @@
+<Application x:Class="ECommerceAppPerfect.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:views="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             StartupUri="MainWindow.xaml">
+
+    <!--
+    FISIERUL APP.XAML - Resurse globale ale aplicatiei
+
+    CE CONTINE ACEST FISIER?
+    Resurse care sunt disponibile in TOATA aplicatia:
+    1. CULORI - paleta de culori (Primary, Accent, Success, Error)
+    2. STILURI - stiluri pentru controale (Button, TextBox, DataGrid)
+    3. CONVERTERS - convertoare pentru data binding
+    4. DATA TEMPLATES - mapari ViewModel -> View
+
+    CUM FUNCTIONEAZA DATA TEMPLATES?
+    WPF foloseste DataTemplates pentru a afisa ViewModels
+    Cand ContentControl primeste un LoginViewModel,
+    cauta un DataTemplate pentru acel tip si afiseaza LoginView
+
+    EXEMPLU:
+    <ContentControl Content="{Binding CurrentViewModel}" />
+
+    Daca CurrentViewModel = new LoginViewModel():
+    WPF gaseste DataTemplate pentru LoginViewModel
+    Si afiseaza LoginView in ContentControl
+
+    AVANTAJ:
+    Navigarea se face prin schimbarea CurrentViewModel
+    UI-ul se actualizeaza automat
+    -->
+
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <!-- CONVERTOARE -->
+            <!-- Instantiem converters pentru a le folosi in bindings -->
+
+            <!-- BooleanToVisibilityConverter - true -> Visible, false -> Collapsed -->
+            <converters:BooleanToVisibilityConverter x:Key="BoolToVis" />
+
+            <!-- InverseBooleanConverter - inverseaza bool-ul -->
+            <converters:InverseBooleanConverter x:Key="InverseBool" />
+
+            <!-- NullToVisibilityConverter - non-null -> Visible, null -> Collapsed -->
+            <converters:NullToVisibilityConverter x:Key="NullToVis" />
+
+            <!-- StatusToColorConverter - transforma status in culoare -->
+            <converters:StatusToColorConverter x:Key="StatusToColor" />
+
+            <!-- PriceFormatConverter - formateaza preturile (1299.99 -> "1,299.99 RON") -->
+            <converters:PriceFormatConverter x:Key="PriceFormat" />
+
+            <!-- PALETA DE CULORI -->
+            <!-- Material Design inspired colors -->
+
+            <!-- Primary - Albastru principal, folosit pentru header, butoane principale -->
+            <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
+            <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1976D2"/>
+            <SolidColorBrush x:Key="PrimaryLightBrush" Color="#BBDEFB"/>
+
+            <!-- Accent - Portocaliu, folosit pentru actiuni secundare, highlight -->
+            <SolidColorBrush x:Key="AccentBrush" Color="#FF5722"/>
+            <SolidColorBrush x:Key="AccentDarkBrush" Color="#E64A19"/>
+
+            <!-- Feedback colors - pentru status si mesaje -->
+            <SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50"/>
+            <SolidColorBrush x:Key="WarningBrush" Color="#FF9800"/>
+            <SolidColorBrush x:Key="ErrorBrush" Color="#F44336"/>
+            <SolidColorBrush x:Key="InfoBrush" Color="#2196F3"/>
+
+            <!-- Neutral colors - pentru fundal si text -->
+            <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
+            <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="CardBrush" Color="#FFFFFF"/>
+            <SolidColorBrush x:Key="DividerBrush" Color="#E0E0E0"/>
+
+            <!-- Text colors -->
+            <SolidColorBrush x:Key="TextPrimaryBrush" Color="#212121"/>
+            <SolidColorBrush x:Key="TextSecondaryBrush" Color="#757575"/>
+            <SolidColorBrush x:Key="TextDisabledBrush" Color="#9E9E9E"/>
+            <SolidColorBrush x:Key="TextOnPrimaryBrush" Color="#FFFFFF"/>
+
+            <!-- STIL BUTON PRIMAR -->
+            <!-- Buton albastru pentru actiuni principale (Save, Login, etc.) -->
+            <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="Medium"/>
+                <Setter Property="Padding" Value="20,12"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <!-- Border cu colturi rotunjite -->
+                            <Border Background="{TemplateBinding Background}"
+                                    CornerRadius="4"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <!-- Trigger pentru hover - schimba culoarea -->
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Opacity" Value="0.5"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- STIL BUTON ACCENT -->
+            <!-- Buton portocaliu pentru actiuni secundare -->
+            <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource AccentDarkBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- STIL BUTON DANGER -->
+            <!-- Buton rosu pentru actiuni periculoase (Delete, Cancel) -->
+            <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                <Setter Property="Background" Value="{StaticResource ErrorBrush}"/>
+            </Style>
+
+            <!-- STIL BUTON OUTLINED -->
+            <!-- Buton cu border, fara fundal (actiuni secundare) -->
+            <Style x:Key="OutlinedButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Padding" Value="20,10"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="4"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- STIL CARD -->
+            <!-- Container cu umbra pentru grupare continut -->
+            <Style x:Key="CardStyle" TargetType="Border">
+                <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+                <Setter Property="CornerRadius" Value="8"/>
+                <Setter Property="Padding" Value="20"/>
+                <Setter Property="Margin" Value="10"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <!-- Drop shadow pentru efect de elevare -->
+                        <DropShadowEffect BlurRadius="10"
+                                        ShadowDepth="2"
+                                        Opacity="0.15"
+                                        Color="Black"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- STIL TEXTBOX -->
+            <!-- TextBox modern cu underline -->
+            <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="BorderBrush" Value="{StaticResource DividerBrush}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Style.Triggers>
+                    <Trigger Property="IsFocused" Value="True">
+                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- STIL HEADER TEXT -->
+            <!-- Text mare pentru titluri de pagina -->
+            <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="28"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="Margin" Value="0,0,0,20"/>
+            </Style>
+
+            <!-- STIL SUBHEADER TEXT -->
+            <Style x:Key="SubHeaderTextStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="18"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                <Setter Property="Margin" Value="0,10,0,10"/>
+            </Style>
+
+            <!-- STIL LABEL -->
+            <Style x:Key="LabelStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                <Setter Property="Margin" Value="5,0,5,2"/>
+            </Style>
+
+            <!-- STIL DATAGRID -->
+            <!-- DataGrid modern fara linii de grid -->
+            <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
+                <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="RowBackground" Value="White"/>
+                <Setter Property="AlternatingRowBackground" Value="#FAFAFA"/>
+                <Setter Property="GridLinesVisibility" Value="None"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="AutoGenerateColumns" Value="False"/>
+                <Setter Property="CanUserAddRows" Value="False"/>
+                <Setter Property="CanUserDeleteRows" Value="False"/>
+                <Setter Property="SelectionMode" Value="Single"/>
+                <Setter Property="SelectionUnit" Value="FullRow"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="RowHeight" Value="45"/>
+            </Style>
+
+            <!-- STIL COMBOBOX -->
+            <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="Margin" Value="5"/>
+                <Setter Property="MinWidth" Value="150"/>
+            </Style>
+
+            <!-- DATA TEMPLATES - MAPARI VIEWMODEL -> VIEW -->
+            <!-- Acestea spun WPF ce View sa afiseze pentru fiecare ViewModel -->
+
+            <!-- LoginViewModel -> LoginView -->
+            <DataTemplate DataType="{x:Type vm:LoginViewModel}">
+                <views:LoginView />
+            </DataTemplate>
+
+            <!-- StoreOwnerDashboardViewModel -> StoreOwnerDashboardView -->
+            <DataTemplate DataType="{x:Type vm:StoreOwnerDashboardViewModel}">
+                <views:StoreOwnerDashboardView />
+            </DataTemplate>
+
+            <!-- ProductManagementViewModel -> ProductManagementView -->
+            <DataTemplate DataType="{x:Type vm:ProductManagementViewModel}">
+                <views:ProductManagementView />
+            </DataTemplate>
+
+            <!-- InventoryManagementViewModel -> InventoryManagementView -->
+            <DataTemplate DataType="{x:Type vm:InventoryManagementViewModel}">
+                <views:InventoryManagementView />
+            </DataTemplate>
+
+            <!-- OrderManagementViewModel -> OrderManagementView -->
+            <DataTemplate DataType="{x:Type vm:OrderManagementViewModel}">
+                <views:OrderManagementView />
+            </DataTemplate>
+
+            <!-- CustomerShopViewModel -> CustomerShopView -->
+            <DataTemplate DataType="{x:Type vm:CustomerShopViewModel}">
+                <views:CustomerShopView />
+            </DataTemplate>
+
+            <!-- ShoppingCartViewModel -> ShoppingCartView -->
+            <DataTemplate DataType="{x:Type vm:ShoppingCartViewModel}">
+                <views:ShoppingCartView />
+            </DataTemplate>
+
+            <!-- OrderHistoryViewModel -> OrderHistoryView -->
+            <DataTemplate DataType="{x:Type vm:OrderHistoryViewModel}">
+                <views:OrderHistoryView />
+            </DataTemplate>
+
+            <!-- CustomerServiceViewModel -> CustomerServiceView -->
+            <DataTemplate DataType="{x:Type vm:CustomerServiceViewModel}">
+                <views:CustomerServiceView />
+            </DataTemplate>
+
+            <!-- StoreSettingsViewModel -> StoreSettingsView -->
+            <DataTemplate DataType="{x:Type vm:StoreSettingsViewModel}">
+                <views:StoreSettingsView />
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

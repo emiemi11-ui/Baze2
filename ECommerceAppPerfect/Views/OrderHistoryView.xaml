@@ -1,0 +1,488 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.OrderHistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1100"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU ISTORICUL COMENZILOR ==================== -->
+    <!-- Stiluri pentru cardurile de comenzi, badge-uri de status și controale -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardul fiecărei comenzi -->
+        <Style x:Key="OrderCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="10" Opacity="0.08" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru badge-ul de status al comenzii -->
+        <Style x:Key="StatusBadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <!-- Stil pentru butoanele de acțiune pe comandă -->
+        <Style x:Key="OrderActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+    <Grid Margin="30">
+        <Grid.ColumnDefinitions>
+            <!-- Coloană pentru lista de comenzi -->
+            <ColumnDefinition Width="*"/>
+            <!-- Coloană pentru detaliile comenzii selectate -->
+            <ColumnDefinition Width="400"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== PANOUL STÂNG - LISTA COMENZILOR ==================== -->
+        <Grid Grid.Column="0" Margin="0,0,25,0">
+            <Grid.RowDefinitions>
+                <!-- Header -->
+                <RowDefinition Height="Auto"/>
+                <!-- Lista comenzilor -->
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ===== HEADER PAGINĂ ===== -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,25">
+                <TextBlock Text="📦 Istoricul Comenzilor"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#212121"/>
+                <TextBlock Text="Vizualizați toate comenzile dumneavoastră"
+                           FontSize="14"
+                           Foreground="#757575"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- ===== LISTA COMENZILOR ===== -->
+            <ScrollViewer Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <!-- ItemsControl pentru afișarea comenzilor -->
+                <ItemsControl ItemsSource="{Binding Orders}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Card pentru fiecare comandă -->
+                            <!-- InputBinding pentru selectarea comenzii la click -->
+                            <Border Style="{StaticResource OrderCardStyle}">
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.SelectOrderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                  CommandParameter="{Binding}"/>
+                                </Border.InputBindings>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <!-- Header cu număr comandă și status -->
+                                        <RowDefinition Height="Auto"/>
+                                        <!-- Detalii comandă -->
+                                        <RowDefinition Height="Auto"/>
+                                        <!-- Footer cu produse și total -->
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- ===== HEADER COMANDĂ ===== -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                                        <StackPanel Orientation="Horizontal">
+                                            <!-- Numărul comenzii -->
+                                            <TextBlock Text="{Binding OrderNumber, StringFormat='Comanda #{0}'}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#212121"/>
+                                        </StackPanel>
+
+                                        <!-- Badge status comandă -->
+                                        <!-- Culoarea se determină prin converter în funcție de status -->
+                                        <Border Style="{StaticResource StatusBadgeStyle}"
+                                                HorizontalAlignment="Right"
+                                                Background="{Binding Status, Converter={StaticResource OrderStatusToColorConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <!-- Icon status -->
+                                                <TextBlock Text="{Binding Status, Converter={StaticResource OrderStatusToIconConverter}}"
+                                                           Margin="0,0,5,0"/>
+                                                <!-- Text status -->
+                                                <TextBlock Text="{Binding Status}"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="White"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- ===== DETALII COMANDĂ ===== -->
+                                    <StackPanel Grid.Row="1" Margin="0,0,0,15">
+                                        <!-- Data comenzii -->
+                                        <TextBlock FontSize="13" Foreground="#757575">
+                                            <Run Text="📅 Plasată pe: "/>
+                                            <Run Text="{Binding OrderDate, StringFormat='{}{0:dd MMMM yyyy, HH:mm}'}"/>
+                                        </TextBlock>
+
+                                        <!-- Adresa de livrare -->
+                                        <TextBlock FontSize="13"
+                                                   Foreground="#757575"
+                                                   Margin="0,5,0,0"
+                                                   TextTrimming="CharacterEllipsis">
+                                            <Run Text="📍 Livrare: "/>
+                                            <Run Text="{Binding ShippingAddress}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- ===== FOOTER - PRODUSE ȘI TOTAL ===== -->
+                                    <Grid Grid.Row="2">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Numărul de produse -->
+                                        <TextBlock Grid.Column="0"
+                                                   FontSize="13"
+                                                   Foreground="#9E9E9E"
+                                                   VerticalAlignment="Center">
+                                            <Run Text="📦 "/>
+                                            <Run Text="{Binding ItemsCount}"/>
+                                            <Run Text=" produse"/>
+                                        </TextBlock>
+
+                                        <!-- Totalul comenzii -->
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Total, StringFormat='{}{0:N2} RON'}"
+                                                   FontSize="18"
+                                                   FontWeight="Bold"
+                                                   Foreground="#2196F3"/>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- ===== MESAJ CÂND NU EXISTĂ COMENZI ===== -->
+            <StackPanel Grid.Row="1"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Visibility="{Binding HasNoOrders, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Text="📋" FontSize="64" HorizontalAlignment="Center" Opacity="0.5"/>
+                <TextBlock Text="Nu aveți comenzi încă"
+                           FontSize="18"
+                           Foreground="#757575"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+                <TextBlock Text="Explorați magazinul și plasați prima comandă"
+                           FontSize="14"
+                           Foreground="#9E9E9E"
+                           HorizontalAlignment="Center"
+                           Margin="0,5,0,20"/>
+                <Button Content="🛍️ Mergi la magazin"
+                        Background="#2196F3"
+                        Foreground="White"
+                        Padding="25,12"
+                        FontSize="14"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Command="{Binding NavigateToShopCommand}"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ==================== PANOUL DREPT - DETALII COMANDĂ ==================== -->
+        <!-- Afișează detaliile complete ale comenzii selectate -->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="12"
+                Padding="25"
+                Visibility="{Binding HasSelectedOrder, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Header detalii -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Progres livrare -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Lista produse -->
+                    <RowDefinition Height="*"/>
+                    <!-- Total și acțiuni -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- ===== HEADER DETALII ===== -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                    <TextBlock Text="📄 Detalii Comandă"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#212121"/>
+                    <TextBlock Text="{Binding SelectedOrder.OrderNumber, StringFormat='#{0}'}"
+                               FontSize="24"
+                               FontWeight="Bold"
+                               Foreground="#2196F3"
+                               Margin="0,8,0,0"/>
+                    <TextBlock Text="{Binding SelectedOrder.OrderDate, StringFormat='📅 {0:dd MMMM yyyy, HH:mm}'}"
+                               FontSize="13"
+                               Foreground="#757575"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <!-- ===== PROGRES LIVRARE ===== -->
+                <!-- Afișează etapele comenzii cu indicatori vizuali -->
+                <Border Grid.Row="1"
+                        Background="#F5F5F5"
+                        CornerRadius="8"
+                        Padding="15"
+                        Margin="0,0,0,20">
+                    <StackPanel>
+                        <TextBlock Text="🚚 Status Livrare"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="#616161"
+                                   Margin="0,0,0,15"/>
+
+                        <!-- Indicator progres cu etape -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Etapa 1: Confirmată -->
+                            <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                                <Border Width="30" Height="30"
+                                        CornerRadius="15"
+                                        Background="{Binding SelectedOrder.IsConfirmed, Converter={StaticResource BoolToProgressColorConverter}}">
+                                    <TextBlock Text="✓"
+                                               Foreground="White"
+                                               FontSize="14"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Confirmată"
+                                           FontSize="10"
+                                           Foreground="#757575"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+
+                            <!-- Etapa 2: Procesare -->
+                            <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                                <Border Width="30" Height="30"
+                                        CornerRadius="15"
+                                        Background="{Binding SelectedOrder.IsProcessing, Converter={StaticResource BoolToProgressColorConverter}}">
+                                    <TextBlock Text="📦"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Procesare"
+                                           FontSize="10"
+                                           Foreground="#757575"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+
+                            <!-- Etapa 3: Expediată -->
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                                <Border Width="30" Height="30"
+                                        CornerRadius="15"
+                                        Background="{Binding SelectedOrder.IsShipped, Converter={StaticResource BoolToProgressColorConverter}}">
+                                    <TextBlock Text="🚚"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Expediată"
+                                           FontSize="10"
+                                           Foreground="#757575"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+
+                            <!-- Etapa 4: Livrată -->
+                            <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                                <Border Width="30" Height="30"
+                                        CornerRadius="15"
+                                        Background="{Binding SelectedOrder.IsDelivered, Converter={StaticResource BoolToProgressColorConverter}}">
+                                    <TextBlock Text="✅"
+                                               FontSize="12"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Livrată"
+                                           FontSize="10"
+                                           Foreground="#757575"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== LISTA PRODUSELOR DIN COMANDĂ ===== -->
+                <StackPanel Grid.Row="2">
+                    <TextBlock Text="📦 Produse comandate"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#616161"
+                               Margin="0,0,0,10"/>
+
+                    <ScrollViewer MaxHeight="200"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding SelectedOrder.OrderItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <!-- Card pentru fiecare produs -->
+                                    <Border Background="#FAFAFA"
+                                            CornerRadius="6"
+                                            Padding="12"
+                                            Margin="0,0,0,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="50"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Imagine miniatura produs -->
+                                            <Border Grid.Column="0"
+                                                    CornerRadius="4"
+                                                    Width="40" Height="40"
+                                                    ClipToBounds="True">
+                                                <Image Source="{Binding Product.ImageUrl}"
+                                                       Stretch="UniformToFill"/>
+                                            </Border>
+
+                                            <!-- Detalii produs -->
+                                            <StackPanel Grid.Column="1" Margin="10,0">
+                                                <TextBlock Text="{Binding Product.Name}"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock FontSize="12" Foreground="#757575">
+                                                    <Run Text="Cant: "/>
+                                                    <Run Text="{Binding Quantity}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <!-- Subtotal -->
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding Subtotal, StringFormat='{}{0:N2} RON'}"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+
+                <!-- ===== TOTAL ȘI ACȚIUNI ===== -->
+                <StackPanel Grid.Row="3" Margin="0,20,0,0">
+                    <!-- Total comandă -->
+                    <Border Background="#E3F2FD"
+                            CornerRadius="8"
+                            Padding="15"
+                            Margin="0,0,0,15">
+                        <Grid>
+                            <TextBlock Text="Total:"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding SelectedOrder.Total, StringFormat='{}{0:N2} RON'}"
+                                       FontSize="20"
+                                       FontWeight="Bold"
+                                       Foreground="#2196F3"
+                                       HorizontalAlignment="Right"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Butoane de acțiune -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Buton recomandă -->
+                        <Button Grid.Column="0"
+                                Content="🔄 Recomandă"
+                                Style="{StaticResource OrderActionButtonStyle}"
+                                Command="{Binding ReorderCommand}"
+                                Margin="0,0,5,0"/>
+
+                        <!-- Buton contact suport -->
+                        <Button Grid.Column="1"
+                                Content="💬 Suport"
+                                Style="{StaticResource OrderActionButtonStyle}"
+                                Background="#FF5722"
+                                Command="{Binding ContactSupportCommand}"
+                                Margin="5,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== PLACEHOLDER CÂND NU E SELECTATĂ NICIO COMANDĂ ===== -->
+        <Border Grid.Column="1"
+                Background="White"
+                CornerRadius="12"
+                Visibility="{Binding HasSelectedOrder, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center"/>
+                <TextBlock Text="Selectați o comandă"
+                           FontSize="16"
+                           Foreground="#757575"
+                           HorizontalAlignment="Center"
+                           Margin="0,15,0,0"/>
+                <TextBlock Text="pentru a vedea detaliile"
+                           FontSize="14"
+                           Foreground="#9E9E9E"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
