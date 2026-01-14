@@ -1,0 +1,356 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.InventoryManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1000"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU GESTIONAREA INVENTARULUI ==================== -->
+    <!-- Stiluri pentru carduri de alertă, indicatori de stoc și controale -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardurile de alertă stoc scăzut -->
+        <Style x:Key="AlertCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FFF3E0"/>
+            <Setter Property="BorderBrush" Value="#FF9800"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Stil pentru indicatorul de stoc verde (suficient) -->
+        <Style x:Key="StockGoodStyle" TargetType="Border">
+            <Setter Property="Background" Value="#E8F5E9"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- Stil pentru indicatorul de stoc galben (scăzut) -->
+        <Style x:Key="StockLowStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FFF3E0"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- Stil pentru indicatorul de stoc roșu (critic/epuizat) -->
+        <Style x:Key="StockCriticalStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FFEBEE"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+
+        <!-- Stil pentru butoanele de actualizare stoc -->
+        <Style x:Key="StockButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#2196F3"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru câmpul de editare cantitate stoc -->
+        <Style x:Key="StockInputStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="TextAlignment" Value="Center"/>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <!-- Rând pentru header -->
+            <RowDefinition Height="Auto"/>
+            <!-- Rând pentru secțiunea de alerte stoc scăzut -->
+            <RowDefinition Height="Auto"/>
+            <!-- Rând pentru tabelul principal de inventar -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ==================== HEADER PAGINĂ ==================== -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="📋 Gestionare Inventar"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="#212121"/>
+            <TextBlock Text="Monitorizați și actualizați stocurile produselor"
+                       FontSize="14"
+                       Foreground="#757575"
+                       Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- ==================== SECȚIUNE ALERTE STOC SCĂZUT ==================== -->
+        <!-- Afișează produsele care necesită reaprovizionare urgentă -->
+        <Border Grid.Row="1"
+                Background="White"
+                CornerRadius="12"
+                Padding="20"
+                Margin="0,0,0,20"
+                Visibility="{Binding HasLowStockAlerts, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Header secțiune alerte cu icon de avertizare -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
+                    <TextBlock Text="⚠️" FontSize="24" VerticalAlignment="Center"/>
+                    <TextBlock Text=" Alerte Stoc Scăzut"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#F57C00"
+                               VerticalAlignment="Center"/>
+                    <!-- Numărul total de alerte afișat într-un badge -->
+                    <Border Background="#FF9800"
+                            CornerRadius="10"
+                            Padding="8,3"
+                            Margin="10,0,0,0"
+                            VerticalAlignment="Center">
+                        <TextBlock Text="{Binding LowStockCount}"
+                                   Foreground="White"
+                                   FontSize="12"
+                                   FontWeight="Bold"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Lista produselor cu stoc scăzut -->
+                <!-- ItemsControl pentru afișarea alertelor fără selecție -->
+                <ItemsControl ItemsSource="{Binding LowStockItems}" MaxHeight="200">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Card individual pentru fiecare alertă -->
+                            <Border Style="{StaticResource AlertCardStyle}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Informații despre produs -->
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding ProductName}"
+                                                   FontWeight="SemiBold"
+                                                   FontSize="14"/>
+                                        <TextBlock FontSize="12" Foreground="#757575">
+                                            <Run Text="Stoc actual: "/>
+                                            <Run Text="{Binding CurrentStock}" FontWeight="Bold" Foreground="#F44336"/>
+                                            <Run Text=" / Minim: "/>
+                                            <Run Text="{Binding MinimumStock}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+
+                                    <!-- Câmp pentru introducerea cantității de reaprovizionare -->
+                                    <TextBox Grid.Column="1"
+                                             Style="{StaticResource StockInputStyle}"
+                                             Text="{Binding RestockQuantity, Mode=TwoWay}"
+                                             Margin="0,0,10,0"/>
+
+                                    <!-- Buton pentru reaprovizionare rapidă -->
+                                    <Button Grid.Column="2"
+                                            Content="📦 Reaprovizionează"
+                                            Style="{StaticResource StockButtonStyle}"
+                                            Command="{Binding DataContext.RestockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- ==================== TABEL PRINCIPAL INVENTAR ==================== -->
+        <Border Grid.Row="2"
+                Background="White"
+                CornerRadius="12"
+                Padding="5">
+            <Border.Effect>
+                <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Rând pentru toolbar cu căutare -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Rând pentru DataGrid -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- ===== TOOLBAR INVENTAR ===== -->
+                <Border Grid.Row="0" Padding="15" Background="#FAFAFA">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Câmp de căutare în inventar -->
+                        <TextBox Grid.Column="0"
+                                 Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Padding="12,10"
+                                 FontSize="14"
+                                 Width="300"
+                                 HorizontalAlignment="Left"/>
+
+                        <!-- Buton pentru salvarea modificărilor -->
+                        <Button Grid.Column="1"
+                                Content="💾 Salvează Modificările"
+                                Style="{StaticResource StockButtonStyle}"
+                                Background="#4CAF50"
+                                Command="{Binding SaveChangesCommand}"/>
+                    </Grid>
+                </Border>
+
+                <!-- ===== DATAGRID INVENTAR ===== -->
+                <!-- Tabel cu toate produsele și cantitățile lor -->
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding InventoryItems}"
+                          SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                          AutoGenerateColumns="False"
+                          SelectionMode="Single"
+                          BorderThickness="0"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          Background="Transparent"
+                          RowBackground="White"
+                          AlternatingRowBackground="#FAFAFA"
+                          RowHeight="55"
+                          ColumnHeaderHeight="45"
+                          CanUserAddRows="False">
+
+                    <!-- Stilizare header coloane -->
+                    <DataGrid.ColumnHeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="Background" Value="#F5F5F5"/>
+                            <Setter Property="Foreground" Value="#616161"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                            <Setter Property="Padding" Value="15,10"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                        </Style>
+                    </DataGrid.ColumnHeaderStyle>
+
+                    <!-- Definirea coloanelor -->
+                    <DataGrid.Columns>
+                        <!-- Coloană cod produs -->
+                        <DataGridTextColumn Header="Cod"
+                                            Binding="{Binding ProductCode}"
+                                            Width="100"
+                                            IsReadOnly="True"/>
+
+                        <!-- Coloană nume produs -->
+                        <DataGridTextColumn Header="Produs"
+                                            Binding="{Binding ProductName}"
+                                            Width="*"
+                                            IsReadOnly="True"/>
+
+                        <!-- Coloană categorie -->
+                        <DataGridTextColumn Header="Categorie"
+                                            Binding="{Binding Category}"
+                                            Width="150"
+                                            IsReadOnly="True"/>
+
+                        <!-- Coloană cantitate în stoc - EDITABILĂ -->
+                        <!-- Aceasta este coloana principală pentru actualizarea stocului -->
+                        <DataGridTemplateColumn Header="Cantitate Stoc" Width="150">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                        <!-- Buton pentru scăderea cantității -->
+                                        <Button Content="−"
+                                                Width="28" Height="28"
+                                                Background="#EEEEEE"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Command="{Binding DataContext.DecreaseStockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+
+                                        <!-- Câmp pentru afișarea/editarea cantității -->
+                                        <TextBox Text="{Binding StockQuantity, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                 Width="60"
+                                                 TextAlignment="Center"
+                                                 Padding="5"
+                                                 Margin="5,0"
+                                                 FontWeight="Bold"/>
+
+                                        <!-- Buton pentru creșterea cantității -->
+                                        <Button Content="+"
+                                                Width="28" Height="28"
+                                                Background="#EEEEEE"
+                                                BorderThickness="0"
+                                                Cursor="Hand"
+                                                Command="{Binding DataContext.IncreaseStockCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Coloană stoc minim - pentru referință -->
+                        <DataGridTextColumn Header="Stoc Minim"
+                                            Binding="{Binding MinimumStock}"
+                                            Width="100"
+                                            IsReadOnly="True"/>
+
+                        <!-- Coloană status stoc cu indicator colorat -->
+                        <!-- Folosește un converter pentru a determina culoarea în funcție de nivelul stocului -->
+                        <DataGridTemplateColumn Header="Status" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <!-- Badge colorat bazat pe statusul stocului -->
+                                    <Border CornerRadius="4"
+                                            Padding="10,5"
+                                            HorizontalAlignment="Center"
+                                            Background="{Binding StockStatus, Converter={StaticResource StockStatusToColorConverter}}">
+                                        <TextBlock Text="{Binding StockStatus}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding StockStatus, Converter={StaticResource StockStatusToTextColorConverter}}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <!-- Coloană ultima actualizare -->
+                        <DataGridTextColumn Header="Ultima Actualizare"
+                                            Binding="{Binding LastUpdated, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}"
+                                            Width="140"
+                                            IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

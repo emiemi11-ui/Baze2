@@ -1,0 +1,57 @@
+<Window x:Class="ECommerceAppPerfect.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="E-Commerce Application"
+        Height="768" Width="1200"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+
+    <!--
+    FEREASTRA PRINCIPALA - MainWindow
+
+    CE FACE ACEASTA FEREASTRA?
+    Este containerul principal al aplicatiei
+    Afiseaza ViewModel-ul curent din NavigationStore
+
+    STRUCTURA:
+    - ContentControl care afiseaza CurrentViewModel
+    - DataTemplates din App.xaml mapeaza ViewModel -> View
+
+    CUM FUNCTIONEAZA NAVIGAREA?
+    1. MainViewModel are proprietatea CurrentViewModel (din NavigationStore)
+    2. ContentControl e legat de CurrentViewModel
+    3. Cand CurrentViewModel se schimba, ContentControl se actualizeaza
+    4. WPF cauta DataTemplate pentru tipul ViewModel-ului
+    5. Afiseaza View-ul corespunzator
+
+    EXEMPLU FLOW:
+    1. User click "Products" in meniu
+    2. MainViewModel seteaza CurrentViewModel = new ProductManagementViewModel()
+    3. ContentControl detecteaza schimbarea
+    4. WPF gaseste DataTemplate pentru ProductManagementViewModel
+    5. Afiseaza ProductManagementView in ContentControl
+    -->
+
+    <Grid>
+        <!--
+        CONTENT CONTROL - Containerul pentru View-ul curent
+
+        Content="{Binding CurrentViewModel}"
+        Leaga continutul de proprietatea CurrentViewModel din MainViewModel
+
+        DataTemplates din App.xaml determina ce View se afiseaza
+        pentru fiecare tip de ViewModel
+
+        IMPLICIT STYLE:
+        Nu setam nimic pe ContentControl - toata stilizarea
+        e in View-urile individuale
+        -->
+        <ContentControl Content="{Binding CurrentViewModel}"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Stretch"/>
+    </Grid>
+</Window>

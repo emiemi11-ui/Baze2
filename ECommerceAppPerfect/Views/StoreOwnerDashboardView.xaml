@@ -1,0 +1,369 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.StoreOwnerDashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="1200"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU DASHBOARD ==================== -->
+    <!-- Stiluri specifice pentru cardurile de statistici și navigare -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardurile de statistici - design Material cu umbră -->
+        <Style x:Key="StatCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Effect">
+                <!-- Umbră subtilă pentru efect de elevație -->
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.1" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele de navigare din meniul lateral -->
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Efect hover pentru butoanele de navigare -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1976D2"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele de acțiune rapidă -->
+        <Style x:Key="QuickActionButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FF5722"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#E64A19"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== LAYOUT PRINCIPAL CU DOUĂ COLOANE ==================== -->
+    <!-- Coloana stângă: meniu navigare, Coloana dreaptă: conținut dashboard -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Coloană pentru meniul de navigare lateral - lățime fixă -->
+            <ColumnDefinition Width="250"/>
+            <!-- Coloană pentru conținutul principal - ocupă restul spațiului -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== MENIU NAVIGARE LATERAL ==================== -->
+        <!-- Panou lateral cu fundal albastru primar pentru navigare -->
+        <Border Grid.Column="0" Background="#2196F3">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Rând pentru header cu logo și titlu -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Rând pentru butoanele de navigare -->
+                    <RowDefinition Height="*"/>
+                    <!-- Rând pentru informații utilizator și deconectare -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- ===== HEADER MENIU ===== -->
+                <!-- Logo și titlul aplicației în partea de sus -->
+                <StackPanel Grid.Row="0" Margin="20,30,20,40">
+                    <TextBlock Text="🏪"
+                               FontSize="40"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Panou Admin"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0,10,0,0"/>
+                    <TextBlock Text="Gestionare magazin"
+                               FontSize="12"
+                               Foreground="#BBDEFB"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- ===== BUTOANE NAVIGARE ===== -->
+                <!-- Lista de butoane pentru navigarea între secțiuni -->
+                <StackPanel Grid.Row="1" Margin="15,0">
+                    <!-- Buton Dashboard - pagina curentă -->
+                    <Button Content="📊 Dashboard"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToDashboardCommand}"/>
+
+                    <!-- Buton pentru gestionarea produselor -->
+                    <Button Content="📦 Produse"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToProductsCommand}"/>
+
+                    <!-- Buton pentru gestionarea inventarului -->
+                    <Button Content="📋 Inventar"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToInventoryCommand}"/>
+
+                    <!-- Buton pentru gestionarea comenzilor -->
+                    <Button Content="🛒 Comenzi"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToOrdersCommand}"/>
+
+                    <!-- Buton pentru serviciul clienți -->
+                    <Button Content="💬 Suport Clienți"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToCustomerServiceCommand}"/>
+
+                    <!-- Buton pentru setările magazinului -->
+                    <Button Content="⚙️ Setări"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding NavigateToSettingsCommand}"/>
+                </StackPanel>
+
+                <!-- ===== SECȚIUNE UTILIZATOR ===== -->
+                <!-- Informații despre utilizatorul conectat și buton deconectare -->
+                <StackPanel Grid.Row="2" Margin="15,0,15,20">
+                    <Border Background="#1976D2" CornerRadius="8" Padding="15">
+                        <StackPanel>
+                            <!-- Numele utilizatorului conectat -->
+                            <TextBlock Text="{Binding CurrentUser}"
+                                       Foreground="White"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Text="Administrator"
+                                       Foreground="#BBDEFB"
+                                       FontSize="12"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Buton pentru deconectare -->
+                    <Button Content="🚪 Deconectare"
+                            Style="{StaticResource NavButtonStyle}"
+                            Command="{Binding LogoutCommand}"
+                            Margin="0,10,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ==================== CONȚINUT PRINCIPAL DASHBOARD ==================== -->
+        <!-- Zona principală cu statistici și acțiuni rapide -->
+        <ScrollViewer Grid.Column="1"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="30">
+                <!-- ===== HEADER PAGINĂ ===== -->
+                <!-- Titlul și data curentă -->
+                <Grid Margin="0,0,0,30">
+                    <StackPanel>
+                        <TextBlock Text="Dashboard"
+                                   FontSize="32"
+                                   FontWeight="Bold"
+                                   Foreground="#212121"/>
+                        <TextBlock Text="{Binding CurrentDate, StringFormat='📅 {0:dddd, dd MMMM yyyy}'}"
+                                   FontSize="14"
+                                   Foreground="#757575"
+                                   Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ===== CARDURI STATISTICI ===== -->
+                <!-- Grid cu 4 carduri pentru statisticile principale -->
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Card 1: Total Produse -->
+                    <!-- Afișează numărul total de produse din magazin -->
+                    <Border Grid.Column="0" Style="{StaticResource StatCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="📦" FontSize="32"/>
+                            <TextBlock Text="Total Produse"
+                                       FontSize="13"
+                                       Foreground="#757575"
+                                       Margin="0,10,0,5"/>
+                            <!-- Binding la proprietatea din ViewModel -->
+                            <TextBlock Text="{Binding TotalProducts}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#2196F3"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 2: Comenzi Noi -->
+                    <!-- Afișează numărul de comenzi noi/în așteptare -->
+                    <Border Grid.Column="1" Style="{StaticResource StatCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="🛒" FontSize="32"/>
+                            <TextBlock Text="Comenzi Noi"
+                                       FontSize="13"
+                                       Foreground="#757575"
+                                       Margin="0,10,0,5"/>
+                            <TextBlock Text="{Binding NewOrders}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#FF5722"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 3: Venituri -->
+                    <!-- Afișează veniturile totale cu formatare monetară -->
+                    <Border Grid.Column="2" Style="{StaticResource StatCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="💰" FontSize="32"/>
+                            <TextBlock Text="Venituri Totale"
+                                       FontSize="13"
+                                       Foreground="#757575"
+                                       Margin="0,10,0,5"/>
+                            <!-- StringFormat pentru afișarea sumei în format monetar -->
+                            <TextBlock Text="{Binding TotalRevenue, StringFormat='{}{0:N2} RON'}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#4CAF50"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Card 4: Stoc Scăzut -->
+                    <!-- Afișează produsele cu stoc sub limita minimă -->
+                    <Border Grid.Column="3" Style="{StaticResource StatCardStyle}">
+                        <StackPanel>
+                            <TextBlock Text="⚠️" FontSize="32"/>
+                            <TextBlock Text="Stoc Scăzut"
+                                       FontSize="13"
+                                       Foreground="#757575"
+                                       Margin="0,10,0,5"/>
+                            <TextBlock Text="{Binding LowStockCount}"
+                                       FontSize="28"
+                                       FontWeight="Bold"
+                                       Foreground="#F44336"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <!-- ===== ACȚIUNI RAPIDE ===== -->
+                <!-- Secțiune cu butoane pentru acțiuni frecvente -->
+                <Border Style="{StaticResource StatCardStyle}" Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="⚡ Acțiuni Rapide"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="#212121"
+                                   Margin="0,0,0,20"/>
+
+                        <!-- WrapPanel pentru aranjarea butoanelor pe mai multe rânduri -->
+                        <WrapPanel>
+                            <!-- Buton pentru adăugarea unui produs nou -->
+                            <Button Content="➕ Adaugă Produs"
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Command="{Binding AddProductCommand}"/>
+
+                            <!-- Buton pentru vizualizarea comenzilor -->
+                            <Button Content="📋 Vezi Comenzi"
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Command="{Binding ViewOrdersCommand}"/>
+
+                            <!-- Buton pentru actualizarea stocului -->
+                            <Button Content="📦 Actualizează Stoc"
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Command="{Binding UpdateStockCommand}"/>
+
+                            <!-- Buton pentru generarea rapoartelor -->
+                            <Button Content="📊 Generează Raport"
+                                    Style="{StaticResource QuickActionButtonStyle}"
+                                    Command="{Binding GenerateReportCommand}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- ===== COMENZI RECENTE ===== -->
+                <!-- Tabel cu ultimele comenzi pentru monitorizare rapidă -->
+                <Border Style="{StaticResource StatCardStyle}" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="📋 Comenzi Recente"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="#212121"
+                                   Margin="0,0,0,20"/>
+
+                        <!-- DataGrid pentru afișarea comenzilor recente -->
+                        <!-- ItemsSource legat de colecția din ViewModel -->
+                        <DataGrid ItemsSource="{Binding RecentOrders}"
+                                  AutoGenerateColumns="False"
+                                  IsReadOnly="True"
+                                  BorderThickness="0"
+                                  GridLinesVisibility="Horizontal"
+                                  HeadersVisibility="Column"
+                                  Background="Transparent"
+                                  RowBackground="White"
+                                  AlternatingRowBackground="#FAFAFA">
+                            <DataGrid.Columns>
+                                <!-- Coloană ID comandă -->
+                                <DataGridTextColumn Header="ID"
+                                                    Binding="{Binding OrderId}"
+                                                    Width="80"/>
+                                <!-- Coloană client -->
+                                <DataGridTextColumn Header="Client"
+                                                    Binding="{Binding CustomerName}"
+                                                    Width="*"/>
+                                <!-- Coloană total cu formatare monetară -->
+                                <DataGridTextColumn Header="Total"
+                                                    Binding="{Binding Total, StringFormat='{}{0:N2} RON'}"
+                                                    Width="120"/>
+                                <!-- Coloană status comandă -->
+                                <DataGridTextColumn Header="Status"
+                                                    Binding="{Binding Status}"
+                                                    Width="120"/>
+                                <!-- Coloană dată comandă -->
+                                <DataGridTextColumn Header="Data"
+                                                    Binding="{Binding OrderDate, StringFormat='{}{0:dd.MM.yyyy}'}"
+                                                    Width="100"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

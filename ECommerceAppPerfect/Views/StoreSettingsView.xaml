@@ -1,0 +1,463 @@
+<UserControl x:Class="ECommerceAppPerfect.Views.StoreSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ECommerceAppPerfect.Views"
+             xmlns:vm="clr-namespace:ECommerceAppPerfect.ViewModels"
+             xmlns:converters="clr-namespace:ECommerceAppPerfect.Converters"
+             mc:Ignorable="d"
+             d:DesignHeight="700" d:DesignWidth="900"
+             Background="#F5F5F5">
+
+    <!-- ==================== RESURSE LOCALE PENTRU SETĂRI MAGAZIN ==================== -->
+    <!-- Stiluri pentru cardurile de setări, câmpuri de input și controale -->
+    <UserControl.Resources>
+        <!-- Stil pentru cardurile de secțiune setări -->
+        <Style x:Key="SettingsCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="25"/>
+            <Setter Property="Margin" Value="0,0,0,20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="0" BlurRadius="15" Opacity="0.08" Color="Black"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru etichetele setărilor -->
+        <Style x:Key="SettingLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#212121"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <!-- Stil pentru descrierile setărilor -->
+        <Style x:Key="SettingDescriptionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#757575"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
+        <!-- Stil pentru câmpurile de text -->
+        <Style x:Key="SettingTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#F5F5F5"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butonul de salvare -->
+        <Style x:Key="SaveButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="30,15"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.25" Color="#4CAF50"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#43A047"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#BDBDBD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil pentru butoanele de selectare culoare -->
+        <Style x:Key="ColorPickerButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#E0E0E0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#2196F3"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- ==================== CONTAINER PRINCIPAL ==================== -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="30">
+            <!-- ==================== HEADER PAGINĂ ==================== -->
+            <StackPanel Margin="0,0,0,30">
+                <TextBlock Text="⚙️ Setări Magazin"
+                           FontSize="28"
+                           FontWeight="Bold"
+                           Foreground="#212121"/>
+                <TextBlock Text="Configurați preferințele și opțiunile magazinului dumneavoastră"
+                           FontSize="14"
+                           Foreground="#757575"
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- ==================== SECȚIUNE: INFORMAȚII GENERALE ==================== -->
+            <!-- Card cu setările de bază ale magazinului -->
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <StackPanel>
+                    <!-- Titlu secțiune -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="🏪" FontSize="24"/>
+                        <TextBlock Text=" Informații Generale"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Numele magazinului -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Numele Magazinului"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Numele care apare în antetul site-ului și în comunicări"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding StoreName, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Email-ul magazinului -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Email Contact"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Adresa de email pentru notificări și corespondență cu clienții"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding ContactEmail, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Telefonul magazinului -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Telefon Contact"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Numărul de telefon afișat pentru suport clienți"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding ContactPhone, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Adresa magazinului -->
+                    <StackPanel>
+                        <TextBlock Text="Adresă"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Adresa fizică a magazinului pentru facturare și livrări"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding StoreAddress, Mode=TwoWay}"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"
+                                 Height="80"
+                                 VerticalContentAlignment="Top"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ==================== SECȚIUNE: PERSONALIZARE ASPECT ==================== -->
+            <!-- Card cu setările de culori și branding -->
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <StackPanel>
+                    <!-- Titlu secțiune -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="🎨" FontSize="24"/>
+                        <TextBlock Text=" Personalizare Aspect"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Culoare primară -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Culoare Primară"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Culoarea principală utilizată pentru butoane și accente"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Butoane predefinite pentru culori -->
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#2196F3"
+                                    Command="{Binding SelectPrimaryColorCommand}"
+                                    CommandParameter="#2196F3"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#4CAF50"
+                                    Command="{Binding SelectPrimaryColorCommand}"
+                                    CommandParameter="#4CAF50"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#9C27B0"
+                                    Command="{Binding SelectPrimaryColorCommand}"
+                                    CommandParameter="#9C27B0"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#F44336"
+                                    Command="{Binding SelectPrimaryColorCommand}"
+                                    CommandParameter="#F44336"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#FF9800"
+                                    Command="{Binding SelectPrimaryColorCommand}"
+                                    CommandParameter="#FF9800"
+                                    Margin="0,0,10,0"/>
+
+                            <!-- Indicator culoare selectată -->
+                            <Border Width="40" Height="40"
+                                    CornerRadius="6"
+                                    BorderBrush="#2196F3"
+                                    BorderThickness="2"
+                                    Background="{Binding PrimaryColor}"
+                                    Margin="20,0,10,0"/>
+                            <TextBlock Text="{Binding PrimaryColor}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Foreground="#616161"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Culoare accent -->
+                    <StackPanel>
+                        <TextBlock Text="Culoare Accent"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Culoarea secundară pentru elemente de evidențiere"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Butoane predefinite pentru culori accent -->
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#FF5722"
+                                    Command="{Binding SelectAccentColorCommand}"
+                                    CommandParameter="#FF5722"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#E91E63"
+                                    Command="{Binding SelectAccentColorCommand}"
+                                    CommandParameter="#E91E63"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#00BCD4"
+                                    Command="{Binding SelectAccentColorCommand}"
+                                    CommandParameter="#00BCD4"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#FFEB3B"
+                                    Command="{Binding SelectAccentColorCommand}"
+                                    CommandParameter="#FFEB3B"
+                                    Margin="0,0,10,0"/>
+                            <Button Style="{StaticResource ColorPickerButtonStyle}"
+                                    Background="#795548"
+                                    Command="{Binding SelectAccentColorCommand}"
+                                    CommandParameter="#795548"
+                                    Margin="0,0,10,0"/>
+
+                            <!-- Indicator culoare selectată -->
+                            <Border Width="40" Height="40"
+                                    CornerRadius="6"
+                                    BorderBrush="#FF5722"
+                                    BorderThickness="2"
+                                    Background="{Binding AccentColor}"
+                                    Margin="20,0,10,0"/>
+                            <TextBlock Text="{Binding AccentColor}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Foreground="#616161"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ==================== SECȚIUNE: SETĂRI COMENZI ==================== -->
+            <!-- Card cu configurările pentru procesarea comenzilor -->
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <StackPanel>
+                    <!-- Titlu secțiune -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="📦" FontSize="24"/>
+                        <TextBlock Text=" Setări Comenzi"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Costul livrării -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Cost Livrare Standard (RON)"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Costul implicit pentru livrarea comenzilor"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding ShippingCost, Mode=TwoWay}"
+                                 Width="200"
+                                 HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+                    <!-- Livrare gratuită peste -->
+                    <StackPanel Margin="0,0,0,20">
+                        <TextBlock Text="Livrare Gratuită de la (RON)"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Valoarea minimă a comenzii pentru livrare gratuită"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding FreeShippingThreshold, Mode=TwoWay}"
+                                 Width="200"
+                                 HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+                    <!-- Stoc minim pentru alertă -->
+                    <StackPanel>
+                        <TextBlock Text="Alertă Stoc Minim"
+                                   Style="{StaticResource SettingLabelStyle}"/>
+                        <TextBlock Text="Cantitatea sub care se afișează alertă de stoc scăzut"
+                                   Style="{StaticResource SettingDescriptionStyle}"/>
+                        <TextBox Style="{StaticResource SettingTextBoxStyle}"
+                                 Text="{Binding LowStockThreshold, Mode=TwoWay}"
+                                 Width="200"
+                                 HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ==================== SECȚIUNE: NOTIFICĂRI ==================== -->
+            <!-- Card cu setările pentru notificări email -->
+            <Border Style="{StaticResource SettingsCardStyle}">
+                <StackPanel>
+                    <!-- Titlu secțiune -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                        <TextBlock Text="🔔" FontSize="24"/>
+                        <TextBlock Text=" Notificări"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Toggle notificări comandă nouă -->
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Notificare Comandă Nouă"
+                                       Style="{StaticResource SettingLabelStyle}"
+                                       Margin="0"/>
+                            <TextBlock Text="Primește email la fiecare comandă nouă"
+                                       Style="{StaticResource SettingDescriptionStyle}"
+                                       Margin="0"/>
+                        </StackPanel>
+                        <!-- CheckBox pentru activare/dezactivare -->
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding NotifyOnNewOrder, Mode=TwoWay}"
+                                  VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Toggle notificări stoc scăzut -->
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Alertă Stoc Scăzut"
+                                       Style="{StaticResource SettingLabelStyle}"
+                                       Margin="0"/>
+                            <TextBlock Text="Primește email când un produs atinge stocul minim"
+                                       Style="{StaticResource SettingDescriptionStyle}"
+                                       Margin="0"/>
+                        </StackPanel>
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding NotifyOnLowStock, Mode=TwoWay}"
+                                  VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- Toggle notificări mesaje suport -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Mesaje Suport Noi"
+                                       Style="{StaticResource SettingLabelStyle}"
+                                       Margin="0"/>
+                            <TextBlock Text="Primește email pentru mesaje noi de la clienți"
+                                       Style="{StaticResource SettingDescriptionStyle}"
+                                       Margin="0"/>
+                        </StackPanel>
+                        <CheckBox Grid.Column="1"
+                                  IsChecked="{Binding NotifyOnSupportMessage, Mode=TwoWay}"
+                                  VerticalAlignment="Center"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ==================== BUTON SALVARE ==================== -->
+            <!-- Butonul principal pentru salvarea tuturor setărilor -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Mesaj status salvare -->
+                <TextBlock Grid.Column="0"
+                           Text="{Binding SaveStatusMessage}"
+                           Foreground="{Binding SaveStatusColor}"
+                           FontSize="14"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding HasSaveStatus, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- Buton salvare -->
+                <Button Grid.Column="1"
+                        Content="💾 Salvează Setările"
+                        Style="{StaticResource SaveButtonStyle}"
+                        Command="{Binding SaveSettingsCommand}"/>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
